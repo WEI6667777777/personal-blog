@@ -2,10 +2,10 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0b0b12">
     <title>相望云端的博客 - 个人主页</title>
-    <!-- 引入图标库  -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preload" as="image" href="./hero-poster.webp" type="image/webp">
     <style>
 
 
@@ -1605,6 +1605,162 @@ object-fit: cover; /* 保持图片比例并覆盖整个容器 */
     }
 }
 
+/* ==================================================================
+   2026-11 补丁：首屏不黑屏 + 移动端响应式 + 加载提速
+   （放在最后，覆盖上面的固定像素写法）
+   ================================================================== */
+html { -webkit-text-size-adjust: 100%; }
+body { background: #0b0b12; min-height: 100vh; }
+img { max-width: 100%; }
+
+/* --- 首屏海报层：不依赖视频，打开就有画面 --- */
+.hero-veil {
+    position: fixed;
+    inset: 0;
+    z-index: -4;
+    display: block;
+    overflow: hidden;
+    pointer-events: none;
+}
+.hero-veil img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 42%;
+    display: block;
+}
+.middle picture,
+.disc-container picture { display: block; width: 100%; height: 100%; }
+.video-bg { opacity: 0; }
+.video-bg.ready { opacity: 1; }
+
+/* --- 滚动后的静态背景：图片改成滚动时再加载 --- */
+.static-bg {
+    background-image: none;
+    z-index: -3;
+}
+.static-bg.has-bg {
+    background-image: url('./bg-door.jpg');
+    background-image: image-set(
+        url('./bg-door.webp') type('image/webp'),
+        url('./bg-door.jpg') type('image/jpeg')
+    );
+}
+
+/* --- 导航栏 --- */
+nav { padding: 16px clamp(14px, 4vw, 50px); gap: 10px; }
+body.scrolled nav { padding: 12px clamp(14px, 4vw, 50px); }
+.logo { font-size: clamp(16px, 4.2vw, 24px); gap: 6px; white-space: nowrap; }
+.logo span { font-size: clamp(14px, 3.6vw, 20px); }
+.nav-links { display: flex; align-items: center; flex-wrap: nowrap; }
+.nav-links a {
+    margin-left: clamp(10px, 2.4vw, 30px);
+    font-size: clamp(12px, 3.4vw, 16px);
+    white-space: nowrap;
+}
+
+/* --- 首屏 --- */
+.hero-section {
+    height: 100vh;
+    height: 100svh;
+    min-height: 480px;
+    padding: 84px 16px 48px;
+}
+.main-title { font-size: clamp(32px, 10vw, 60px); margin-bottom: 16px; }
+.typewriter-container { font-size: clamp(15px, 4.4vw, 24px); min-height: 1.7em; padding: 0 12px; }
+.cursor { width: 2px; height: 1.1em; }
+
+/* --- 第二屏 --- */
+.content-section { padding: clamp(64px, 13vw, 100px) clamp(14px, 4vw, 50px); }
+.content-card { padding: clamp(22px, 5vw, 40px); border-radius: 16px; }
+.content-card h2 { font-size: clamp(20px, 5.4vw, 28px); }
+.content-card p { font-size: clamp(13px, 3.6vw, 16px); }
+.button-group-container button {
+    padding: .8em 1.2em;
+    margin: .35em;
+    font-size: clamp(12px, 3.4vw, 14px);
+}
+.button-group-container h4 { font-size: clamp(14px, 4vw, 16px); }
+
+/* --- 第三屏：未来可期 --- */
+.screen-3 {
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(22px, 6vw, 40px);
+    padding: clamp(60px, 14vw, 120px) 16px;
+    text-align: center;
+}
+.screen-3 .main-title { font-size: clamp(30px, 9vw, 60px); margin-bottom: 0; }
+.text-group p {
+    font-size: clamp(14px, 4.2vw, 20px);
+    line-height: 2;
+    color: rgba(255, 255, 255, .85);
+}
+
+/* --- 笑脸：整体按屏宽缩放 --- */
+.face {
+    width: clamp(120px, 40vw, 200px);
+    height: clamp(120px, 40vw, 200px);
+    flex-shrink: 0;
+}
+.face .eye { width: 30%; height: 30%; }
+.face::after { width: 45%; height: 20%; }
+
+/* --- 开门动画 --- */
+.container {
+    width: 100%;
+    max-width: 1000px;
+    height: auto;
+    margin: clamp(30px, 8vw, 50px) auto;
+    padding: 0 14px;
+}
+.dajianshi { width: min(320px, 86vw); height: min(240px, 64.5vw); }
+.leftDoor, .rightDoor { font-size: clamp(12px, 3.4vw, 16px); }
+
+/* --- 书本简历 --- */
+.book-wrapper { padding: clamp(20px, 5vw, 30px) clamp(12px, 4vw, 20px) 40px; }
+.book-page { -webkit-overflow-scrolling: touch; }
+/* 代码页行间空白：父级 pre-wrap 会把标签间的换行也渲染成空行，这里拆开处理 */
+.code-editor { white-space: normal; }
+.code-line { white-space: pre-wrap; }
+@media (max-width: 600px) {
+    .book-container { height: auto; }
+    .book-page { height: auto; max-height: 340px; }
+}
+
+/* --- 页脚：给左下角音乐按钮留出位置 --- */
+@media (max-width: 700px) {
+    .site-footer { padding-bottom: 84px; }
+}
+
+/* --- 首屏文字可读性 --- */
+.overlay {
+    background: linear-gradient(180deg,
+        rgba(0, 0, 0, .58) 0%,
+        rgba(0, 0, 0, .30) 38%,
+        rgba(0, 0, 0, .55) 100%);
+}
+.typing-text { text-shadow: 0 2px 16px rgba(0, 0, 0, .6); }
+.main-title { text-shadow: 0 0 20px rgba(255, 170, 0, .6), 0 3px 22px rgba(0, 0, 0, .55); }
+
+/* --- 左下角音乐 --- */
+.music-control { left: clamp(12px, 3vw, 30px); bottom: clamp(12px, 3vw, 30px); gap: 8px; }
+.disc-container { width: clamp(38px, 11vw, 50px); height: clamp(38px, 11vw, 50px); }
+.music-info { max-width: clamp(72px, 26vw, 100px); }
+/* 小屏只留唱片，避免压住正文 */
+@media (max-width: 480px) {
+    .music-info { display: none; }
+    .disc-container { width: 44px; height: 44px; opacity: .85; }
+}
+
+/* --- 横屏手机：首屏别太高 --- */
+@media (max-height: 520px) and (orientation: landscape) {
+    .hero-section { height: auto; min-height: 100vh; padding: 72px 16px 40px; }
+}
     </style>
 </head>
 <body>
@@ -1622,13 +1778,33 @@ object-fit: cover; /* 保持图片比例并覆盖整个容器 */
         <div class="loader-icon"></div>
     </div>
 </div>
+<script>
+/* 开屏遮罩兜底：不等 window.load（视频/大图没下完也照样放行），最多黑屏 1.2 秒 */
+(function () {
+    var el = document.getElementById('loading-screen');
+    if (!el) return;
+    var closed = false;
+    function hide() {
+        if (closed) return;
+        closed = true;
+        el.classList.add('fade-out');
+        setTimeout(function () { el.style.display = 'none'; }, 900);
+    }
+    setTimeout(hide, 500);
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(hide, 300); });
+    setTimeout(hide, 1200);
+})();
+</script>
 
     <!-- 1. 背景层 -->
-    <!-- 视频背景 (请替换 src 为你的视频链接) -->
-    <video class="video-bg" autoplay muted loop playsinline>
-        <source src="./douyin_video.mp4" type="video/mp4">
-    </video>
-    <!-- 静态背景 (CSS 中已设置图片) -->
+    <!-- 首屏海报：静态图先顶上，视频加载好再淡入覆盖 -->
+    <picture class="hero-veil">
+        <source srcset="./hero-poster.webp" type="image/webp">
+        <img src="./hero-poster.jpg" alt="" decoding="async" fetchpriority="high">
+    </picture>
+    <!-- 视频背景：桌面端且网速正常时由 JS 延迟注入，移动端不下载 -->
+    <video id="videoBg" class="video-bg" muted loop playsinline preload="none"></video>
+    <!-- 静态背景（滚动后由 JS 懒加载图片） -->
     <div class="static-bg"></div>
     <!-- 遮罩 -->
     <div class="overlay"></div>
@@ -1731,6 +1907,7 @@ object-fit: cover; /* 保持图片比例并覆盖整个容器 */
         </div>
         <!-- ========== 时间进度组件结束 ========== -->
         </div>
+    </section>
 
 
         <!-- 第三屏 -->
@@ -1758,14 +1935,17 @@ object-fit: cover; /* 保持图片比例并覆盖整个容器 */
 
     <!-- 5. 音乐播放器 -->
     <!-- 音频标签  -->
-    <audio id="bg-music" loop auto>
-        <source src="./douyin_video.mp4" type="audio/mpeg">
+    <audio id="bg-music" loop preload="none">
+        <source src="./bgm.mp3" type="audio/mpeg">
     </audio>
 
     <div class="music-control" id="music-btn">
         <div class="disc-container">
             <!-- 专辑封面图 -->
-            <img src="./cover.jpg" alt="Cover">
+            <picture>
+                <source srcset="./cover.webp" type="image/webp">
+                <img src="./cover.jpg" alt="Cover" loading="lazy" decoding="async">
+            </picture>
         </div>
         <div class="music-info">
             <div>背景音乐</div>
@@ -1782,7 +1962,10 @@ object-fit: cover; /* 保持图片比例并覆盖整个容器 */
   <div class="leftDoor">左门要开了</div>
   <div class="rightDoor">右门也要开了</div>
   <div class="middle">
-    <img src="./images/1.jpg" alt="开门图片">
+    <picture>
+      <source srcset="./door.webp" type="image/webp">
+      <img src="./door.jpg" alt="开门图片" loading="lazy" decoding="async">
+    </picture>
   </div>
 </div>
 </div>
@@ -1957,25 +2140,17 @@ object-fit: cover; /* 保持图片比例并覆盖整个容器 */
     <!-- ==================== JavaScript 逻辑 ==================== -->
     <script>
 
-        // 监听整个页面加载完成
-window.addEventListener('load', function() {
-    const loader = document.getElementById('loading-screen');
+        // 开屏遮罩的关闭逻辑已放在 body 顶部（不等 window.load，避免黑屏）
 
-    // 设置一个延时，让用户能看清动画（比如 1500毫秒 = 1.5秒）
-    setTimeout(function() {
-        // 添加 fade-out 类，触发 CSS 里的向上滑出动画
-        loader.classList.add('fade-out');
+        // --- 1. 滚动切换背景逻辑（静态背景图滚动到这里才下载） ---
+        const staticBg = document.querySelector('.static-bg');
+        let staticBgLoaded = false;
+        function ensureStaticBg() {
+            if (staticBgLoaded || !staticBg) return;
+            staticBgLoaded = true;
+            staticBg.classList.add('has-bg');
+        }
 
-        // 动画彻底结束后（比如 1 秒后），从文档流中移除它，释放内存
-        setTimeout(() => {
-            loader.style.display = 'none';
-        }, 1000);
-
-    }, 1500);
-});
-
-
-        // --- 1. 滚动切换背景逻辑 ---
         window.addEventListener('scroll', () => {
             const scrollY = window.scrollY;
             const body = document.body;
@@ -1983,10 +2158,11 @@ window.addEventListener('load', function() {
             // 当滚动超过 100px 时，添加 scrolled 类
             if (scrollY > 100) {
                 body.classList.add('scrolled');
+                ensureStaticBg();
             } else {
                 body.classList.remove('scrolled');
             }
-        });
+        }, { passive: true });
 
         // --- 2. 打字机特效逻辑 ---
         const textElement = document.getElementById('typing-text');
@@ -2038,30 +2214,27 @@ window.addEventListener('load', function() {
         const musicBtn = document.getElementById('music-btn');
         const audio = document.getElementById('bg-music');
         let isPlaying = false;
-
-        // 尝试自动播放 (现代浏览器可能会拦截，需要用户交互后才能成功)
-        window.addEventListener('load', () => {
-            audio.volume = 0.5; // 设置音量 50%
-            audio.play().then(() => {
-                // 自动播放成功
-                isPlaying = true;
-                musicBtn.classList.add('playing');
-            }).catch(error => {
-                console.log("自动播放被拦截，等待用户点击");
-                // 自动播放失败是常态，不需要报错，等用户点就行
-            });
-        });
+        // 音频不做自动播放：浏览器会拦截，且省 480KB 流量，用户点击才加载
 
         // 点击按钮切换播放状态
         musicBtn.addEventListener('click', () => {
             if (isPlaying) {
                 audio.pause();
                 musicBtn.classList.remove('playing');
-            } else {
-                audio.play();
-                musicBtn.classList.add('playing');
+                isPlaying = false;
+                return;
             }
-            isPlaying = !isPlaying;
+            audio.volume = 0.5;
+            const p = audio.play();
+            if (p && p.then) {
+                p.then(() => {
+                    musicBtn.classList.add('playing');
+                    isPlaying = true;
+                }).catch(() => { isPlaying = false; });
+            } else {
+                musicBtn.classList.add('playing');
+                isPlaying = true;
+            }
         });
 
 // 第三屏的js
@@ -2295,6 +2468,35 @@ dajianshi.addEventListener('mouseleave', handleMouseLeave);
 
 
     
+    // ===== 背景视频懒加载：手机不下载，桌面等页面空闲再加载 =====
+    (function () {
+        var v = document.getElementById('videoBg');
+        if (!v) return;
+        var conn = navigator.connection || {};
+        var slow = conn.saveData === true || /(^|-)2g$/.test(conn.effectiveType || '');
+        var small = window.matchMedia('(max-width: 767px)').matches;
+        var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (small || slow || calm) return; // 移动端/省流/减弱动效：只留海报图
+
+        function start() {
+            var s = document.createElement('source');
+            s.src = './hero.mp4';
+            s.type = 'video/mp4';
+            v.appendChild(s);
+            v.load();
+            v.addEventListener('canplay', function () { v.classList.add('ready'); }, { once: true });
+            v.addEventListener('playing', function () { v.classList.add('ready'); }, { once: true });
+            var p = v.play();
+            if (p && p.catch) p.catch(function () {});
+        }
+
+        if (window.requestIdleCallback) {
+            requestIdleCallback(start, { timeout: 2500 });
+        } else {
+            setTimeout(start, 800);
+        }
+    })();
+
     </script>
 </body>
 </html>
