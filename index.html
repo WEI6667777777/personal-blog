@@ -2468,30 +2468,64 @@ dajianshi.addEventListener('mouseleave', handleMouseLeave);
 
 
     
-    // ===== 背景视频懒加载：手机不下载，桌面等页面空闲再加载 =====
+    // ===== 背景视频：手机用 720p 小文件，桌面用 960p，都等页面空闲再加载 =====
     (function () {
         var v = document.getElementById('videoBg');
         if (!v) return;
+
         var conn = navigator.connection || {};
         var slow = conn.saveData === true || /(^|-)2g$/.test(conn.effectiveType || '');
-        var small = window.matchMedia('(max-width: 767px)').matches;
         var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (small || slow || calm) return; // 移动端/省流/减弱动效：只留海报图
+        if (slow || calm) return; // 开了省流 / 要求减弱动效：停在海报图
+
+        var small = window.matchMedia('(max-width: 767px)').matches;
+        var src = small ? './hero-m.mp4' : './hero.mp4';
+        var started = false;
+        var gestureBound = false;
+
+        function markReady() { v.classList.add('ready'); }
+
+        function tryPlay() {
+            var p = v.play();
+            if (p && p.catch) p.catch(bindGesture);
+        }
+
+        // iOS 微信 / 低电量模式可能拒绝自动播放，等用户第一次碰屏幕再补一次
+        function bindGesture() {
+            if (gestureBound) return;
+            gestureBound = true;
+            function kick() {
+                v.play().catch(function () {});
+                document.removeEventListener('touchstart', kick);
+                document.removeEventListener('click', kick);
+            }
+            document.addEventListener('touchstart', kick, { passive: true });
+            document.addEventListener('click', kick, { passive: true });
+        }
 
         function start() {
+            if (started) return;
+            started = true;
+
             var s = document.createElement('source');
-            s.src = './hero.mp4';
+            s.src = src;
             s.type = 'video/mp4';
             v.appendChild(s);
             v.load();
-            v.addEventListener('canplay', function () { v.classList.add('ready'); }, { once: true });
-            v.addEventListener('playing', function () { v.classList.add('ready'); }, { once: true });
-            var p = v.play();
-            if (p && p.catch) p.catch(function () {});
+
+            v.addEventListener('canplay', markReady, { once: true });
+            v.addEventListener('playing', markReady, { once: true });
+            // 首帧真正渲染出来再盖住海报，避免视频还没出画就先变黑
+            v.addEventListener('timeupdate', function () {
+                if (v.currentTime > 0) markReady();
+            }, { once: true });
+
+            tryPlay();
         }
 
+        // 先把首屏文字、时间进度跑起来，再加载视频
         if (window.requestIdleCallback) {
-            requestIdleCallback(start, { timeout: 2500 });
+            requestIdleCallback(start, { timeout: 2000 });
         } else {
             setTimeout(start, 800);
         }
